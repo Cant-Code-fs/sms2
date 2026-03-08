@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model School {
+  id                    String   @id @default(uuid())
+  name                  String
+  address               String
+  phone                 String
+  email                 String
+  logo_url              String?
+  receipt_prefix        String
+  receipt_counter       Int      @default(1)
+  current_academic_year String   @default("2024-25")
+  created_at            DateTime @default(now())
+
+  classes             Class[]
+  students            Student[]
+  fee_types           FeeType[]
+  fee_structures      FeeStructure[]
+  receipts            Receipt[]
+  staff               Staff[]
+  transport_routes    TransportRoute[]
+  exam_terms          ExamTerm[]
+  annual_charge_terms AnnualChargeTerm[]
+  audit_logs          AuditLog[]
+
+  @@map("School")
+}
+
+model Class {
+  id        String @id @default(uuid())
+  school_id String
+  name      String
+  order     Int
+
+  school         School         @relation(fields: [school_id], references: [id])
+  sections       Section[]
+  fee_structures FeeStructure[]
+
+  @@map("Class")
+}
+
+model Section {
+  id       String @id @default(uuid())
+  class_id String
+  name     String
+
+  class    Class     @relation(fields: [class_id], references: [id])
+  students Student[]
+
+  @@map("Section")
+}
+
+model Student {
+  id             String   @id @default(uuid())
+  school_id      String
+  section_id     String
+  admission_no   String   @unique
+  first_name     String
+  last_name      String
+  date_of_birth  DateTime
+  gender         String
+  parent_name    String
+  parent_phone   String
+  parent_email   String?
+  address        String?
+  photo_url      String?
+  is_active      Boolean  @default(true)
+  admission_date DateTime @default(now())
+  created_at     DateTime @default(now())
+
+  school               School               @relation(fields: [school_id], references: [id])
+  section              Section              @relation(fields: [section_id], references: [id])
+  payments             Payment[]
+  receipts             Receipt[]
+  transport_enrollment TransportEnrollment?
+  one_time_fee_records OneTimeFeeRecord[]
+  whatsapp_logs        WhatsappLog[]
+
+  @@map("Student")
+}
+
+model FeeType {
+  id            String  @id @default(uuid())
+  school_id     String
+  name          String
+  fee_category  String
+  description   String?
+  has_late_fine Boolean @default(true)
+  is_active     Boolean @default(true)
+
+  school               School             @relation(fields: [school_id], references: [id])
+  fee_structures       FeeStructure[]
+  one_time_fee_records OneTimeFeeRecord[]
+
+  @@map("FeeType")
+}
+
+model FeeStructure {
+  id            String  @id @default(uuid())
+  school_id     String
+  fee_type_id   String
+  class_id      String
+  amount        Decimal
+  academic_year String
+  is_active     Boolean @default(true)
+
+  school    School  @relation(fields: [school_id], references: [id])
+  fee_type  FeeType @relation(fields: [fee_type_id], references: [id])
+  class     Class   @relation(fields: [class_id], references: [id])
+
+  @@unique([school_id, fee_type_id, class_id, academic_year])
+  @@map("FeeStructure")
+}
+
+model ExamTerm {
+  id            String   @id @default(uuid())
+  school_id     String
+  name          String
+  due_date      DateTime
+  academic_year String
+  is_active     Boolean  @default(true)
+
+  school           School             @relation(fields: [school_id], references: [id])
+  one_time_records OneTimeFeeRecord[]
+
+  @@map("ExamTerm")
+}
+
+model AnnualChargeTerm {
+  id            String   @id @default(uuid())
+  school_id     String
+  name          String
+  due_date      DateTime
+  academic_year String
+  is_active     Boolean  @default(true)
+
+  school           School             @relation(fields: [school_id], references: [id])
+  one_time_records OneTimeFeeRecord[]
+
+  @@map("AnnualChargeTerm")
+}
+
+model OneTimeFeeRecord {
+  id                    String    @id @default(uuid())
+  student_id            String
+  fee_type_id           String
+  academic_year         String
+  exam_term_id          String?
+  annual_charge_term_id String?
+  amount                Decimal
+  is_paid               Boolean   @default(false)
+  payment_id            String?
+  paid_at               DateTime?
+
+  student            Student           @relation(fields: [student_id], references: [id])
+  fee_type           FeeType           @relation(fields: [fee_type_id], references: [id])
+  annual_charge_term AnnualChargeTerm? @relation(fields: [annual_charge_term_id], references: [id])
+  exam_term          ExamTerm?         @relation(fields: [exam_term_id], references: [id])
+
+  @@map("OneTimeFeeRecord")
+}
+
+model TransportRoute {
+  id          String  @id @default(uuid())
+  school_id   String
+  route_name  String
+  description String?
+  monthly_fee Decimal
+  is_active   Boolean @default(true)
+
+  school      School                @relation(fields: [school_id], references: [id])
+  enrollments TransportEnrollment[]
+
+  @@map("TransportRoute")
+}
+
+model TransportEnrollment {
+  id         String    @id @default(uuid())
+  student_id String    @unique
+  route_id   String
+  start_date DateTime
+  end_date   DateTime?
+  is_active  Boolean   @default(true)
+
+  student Student        @relation(fields: [student_id], references: [id])
+  route   TransportRoute @relation(fields: [route_id], references: [id])
+
+  @@map("TransportEnrollment")
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  student_id        String
+  receipt_id        String?
+  amount_paid       Decimal
+  late_fine_paid    Decimal  @default(0)
+  concession        Decimal  @default(0)
+  concession_reason String?
+  payment_date      DateTime @default(now())
+  payment_mode      String
+  cheque_number     String?
+  upi_txn_id        String?
+  notes             String?
+  collected_by      String
+  is_cancelled      Boolean  @default(false)
+  cancel_reason     String?
+  cancelled_by      String?
+  cancelled_at      DateTime?
+  fee_breakdown     Json
+
+  student Student  @relation(fields: [student_id], references: [id])
+  receipt Receipt? @relation(fields: [receipt_id], references: [id])
+
+  @@map("Payment")
+}
+
+model Receipt {
+  id             String   @id @default(uuid())
+  school_id      String
+  student_id     String
+  receipt_number String   @unique
+  amount         Decimal
+  late_fine      Decimal  @default(0)
+  concession     Decimal  @default(0)
+  payment_date   DateTime @default(now())
+  payment_mode   String
+  fee_breakdown  Json
+  generated_by   String
+  is_cancelled   Boolean  @default(false)
+  cancel_reason  String?
+  cancelled_by   String?
+  cancelled_at   DateTime?
+  pdf_url        String?
+  created_at     DateTime @default(now())
+
+  school   School    @relation(fields: [school_id], references: [id])
+  student  Student   @relation(fields: [student_id], references: [id])
+  payments Payment[]
+
+  @@map("Receipt")
+}
+
+model Staff {
+  id           String   @id @default(uuid())
+  school_id    String?
+  supabase_uid String   @unique
+  name         String
+  email        String   @unique
+  phone        String?
+  role         String
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  school School? @relation(fields: [school_id], references: [id])
+
+  @@map("Staff")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  school_id   String?
+  staff_id    String
+  action      String
+  entity_type String
+  entity_id   String
+  old_value   Json?
+  new_value   Json?
+  created_at  DateTime @default(now())
+
+  school School? @relation(fields: [school_id], references: [id])
+
+  @@map("AuditLog")
+}
+
+model WhatsappLog {
+  id            String   @id @default(uuid())
+  student_id    String
+  phone         String
+  message_type  String
+  template_name String
+  parameters    Json
+  status        String
+  error_message String?
+  sent_at       DateTime @default(now())
+
+  student Student @relation(fields: [student_id], references: [id])
+
+  @@map("WhatsappLog")
+}

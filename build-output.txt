@@ -1,0 +1,46 @@
+﻿
+> school-management-system@0.1.0 build
+> next build
+
+node.exe :  ΓÜá Invalid 
+next.config.mjs options 
+detected: 
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: ( ΓÜá In  
+  valid ne...ions detected   
+ : :String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+ ΓÜá     Unrecognized key(s) 
+in object: 
+'serverExternalPackages'
+ ΓÜá See more info here: http
+s://nextjs.org/docs/messages/
+invalid-next-config
+  Γû▓ Next.js 14.2.20
+  - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/schools/[schoolId]/stud
+ents/new/page.tsx
+Module not found: Can't 
+resolve 
+'@hookform/resolvers/zod'
+
+https://nextjs.org/docs/messa
+ges/module-not-found
+
+
+> Build failed because of 
+webpack errors
