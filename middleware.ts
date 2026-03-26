@@ -34,6 +34,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.json({ error: 'Server misconfigured' }, { status: 503 });
     }
 
+    // API routes and login route are public for middleware, they perform auth in the route or client-side
+    if (pathname.startsWith('/api/') || pathname === '/login') {
+        return NextResponse.next();
+    }
+
     let response = NextResponse.next({
         request: { headers: request.headers },
     });
@@ -58,17 +63,14 @@ export async function middleware(request: NextRequest) {
 
     const { data: { session } } = await supabase.auth.getSession();
 
-    // Logged-in user hitting /login → redirect to dashboard
-    if (pathname === '/login') {
-        if (session) {
-            return NextResponse.redirect(new URL('/dashboard', request.url));
-        }
-        return response;
+    // If this is an API route, let it handle its own auth (avoid extra network call in middleware)
+    if (pathname.startsWith('/api/')) {
+        return NextResponse.next();
     }
 
-    // Allow API routes to handle their own auth
-    if (pathname.startsWith('/api/')) {
-        return response;
+    // Login page should be public; we avoid the Supabase round trip in middleware and handle redirection in client-side logic
+    if (pathname === '/login') {
+        return NextResponse.next();
     }
 
     // All pages require authentication

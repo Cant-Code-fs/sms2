@@ -24,6 +24,8 @@ export default function SuperAdminDashboard() {
             if (!res.ok) throw new Error('Failed to fetch dashboard');
             return res.json();
         },
+        staleTime: 5 * 60 * 1000, // keep dashboard stale for 5 min
+        refetchOnWindowFocus: false,
     });
 
     if (isLoading) {

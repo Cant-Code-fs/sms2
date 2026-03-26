@@ -45,6 +45,7 @@ function buildNav(schoolId: string): NavItem[] {
                 { label: 'School Info', href: `/schools/${schoolId}/settings/school`, icon: '🏫', roles: ['super_admin', 'school_admin'] },
                 { label: 'Classes', href: `/schools/${schoolId}/settings/classes`, icon: '📚', roles: ['super_admin', 'school_admin'] },
                 { label: 'Staff', href: `/schools/${schoolId}/settings/staff`, icon: '👥', roles: ['super_admin', 'school_admin'] },
+                { label: 'Teacher Attendance', href: `/schools/${schoolId}/attendance/teachers`, icon: '🗓️', roles: ['super_admin', 'school_admin', 'receptionist'] },
                 { label: 'Academic Year', href: `/schools/${schoolId}/settings/academic-year`, icon: '📅', roles: ['super_admin', 'school_admin'] },
             ],
         },

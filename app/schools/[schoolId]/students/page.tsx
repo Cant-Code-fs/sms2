@@ -73,6 +73,9 @@ export default function StudentsPage() {
             if (!res.ok) throw new Error('Failed to fetch students');
             return res.json();
         },
+        keepPreviousData: true,
+        staleTime: 5 * 60 * 1000,
+        refetchOnWindowFocus: false,
     });
 
     const handleExportCSV = async () => {
@@ -86,15 +89,15 @@ export default function StudentsPage() {
         a.click();
     };
 
-    const classOptions = [
+    const classOptions = React.useMemo(() => [
         { value: '', label: 'All Classes' },
         ...((classesData?.data || []).map((c: { id: string; name: string }) => ({ value: c.id, label: c.name }))),
-    ];
+    ], [classesData]);
 
-    const sectionOptions = [
+    const sectionOptions = React.useMemo(() => [
         { value: '', label: 'All Sections' },
         ...((sectionsData?.data || []).map((s: { id: string; name: string }) => ({ value: s.id, label: s.name }))),
-    ];
+    ], [sectionsData]);
 
     const columns = [
         {

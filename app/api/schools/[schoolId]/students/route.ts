@@ -54,9 +54,36 @@ export async function GET(
             prisma.student.count({ where }),
             prisma.student.findMany({
                 where,
-                include: {
-                    section: { include: { class: true } },
-                    transport_enrollment: { include: { route: true } },
+                select: {
+                    id: true,
+                    school_id: true,
+                    section_id: true,
+                    admission_no: true,
+                    first_name: true,
+                    last_name: true,
+                    date_of_birth: true,
+                    gender: true,
+                    parent_name: true,
+                    parent_phone: true,
+                    parent_email: true,
+                    address: true,
+                    photo_url: true,
+                    is_active: true,
+                    admission_date: true,
+                    section: {
+                        select: {
+                            id: true,
+                            name: true,
+                            class: { select: { id: true, name: true, order: true } },
+                        },
+                    },
+                    transport_enrollment: {
+                        select: {
+                            id: true,
+                            is_active: true,
+                            route: { select: { id: true, route_name: true, monthly_fee: true } },
+                        },
+                    },
                 },
                 orderBy: [{ section: { class: { order: 'asc' } } }, { section: { name: 'asc' } }, { first_name: 'asc' }],
                 skip: (page - 1) * pageSize,
@@ -68,7 +95,25 @@ export async function GET(
         if (format === 'csv') {
             const allStudents = await prisma.student.findMany({
                 where,
-                include: { section: { include: { class: true } }, transport_enrollment: { include: { route: true } } },
+                select: {
+                    id: true,
+                    admission_no: true,
+                    first_name: true,
+                    last_name: true,
+                    parent_name: true,
+                    parent_phone: true,
+                    parent_email: true,
+                    is_active: true,
+                    section: {
+                        select: {
+                            name: true,
+                            class: { select: { name: true } },
+                        },
+                    },
+                    transport_enrollment: {
+                        select: { route: { select: { route_name: true } } },
+                    },
+                },
                 orderBy: [{ section: { class: { order: 'asc' } } }, { first_name: 'asc' }],
             });
             const rows = [

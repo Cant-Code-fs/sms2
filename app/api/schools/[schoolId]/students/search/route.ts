@@ -27,8 +27,20 @@ export async function GET(
                     { parent_phone: { contains: q, mode: 'insensitive' } },
                 ],
             },
-            include: {
-                section: { include: { class: true } },
+            select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                admission_no: true,
+                photo_url: true,
+                parent_name: true,
+                parent_phone: true,
+                section: {
+                    select: {
+                        name: true,
+                        class: { select: { name: true } },
+                    },
+                },
             },
             take: 8,
             orderBy: { first_name: 'asc' },
